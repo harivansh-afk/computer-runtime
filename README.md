@@ -2,7 +2,7 @@
 
 <img width="3598" height="630" alt="Gemini_Generated_Image_d10lsxd10lsxd10l" src="https://github.com/user-attachments/assets/332ca256-2707-46af-b593-e5e3071a2263" />
 
-A minimal home-manager flake and a justfile for running machines on [computer CLI](https://agentcomputer.ai).
+A minimal home-manager flake and justfile for running machines on [agentcomputer](https://agentcomputer.ai).
 
 <img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/e4dfe881-6999-4dc6-b762-d164e99fdd79" />
 
@@ -11,11 +11,7 @@ The flake composes home-manager on `x86_64-linux` only.
 
 Global username, flake ref, clone path, and box size are encoded in .env
 
-Secrets live in Bitwarden and are rendered at `just secrets` time using the `bw` cli on the laptop.
-
-The box never unlocks your vault.
-
-Repos clone into `~/Documents/github` on the box, matching the laptop layout.
+Repos clone into `~/Documents/github` on the computers.
 
 Claude and Codex are preinstalled on the computer image.
 
