@@ -1,6 +1,6 @@
 {
   programs.zsh.shellAliases = {
-    cc = "claude";
+    cc = "claude --dangerously-skip-permissions";
     co = "codex --dangerously-bypass-approvals-and-sandbox";
 
     gs = "git status";
