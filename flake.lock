@@ -1,0 +1,65 @@
+{
+  "nodes": {
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1776562531,
+        "narHash": "sha256-Lh5Ns9DI67E+lSMOCGK0S+mFPy0mz0yOGiJTUXiR9JI=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "5b56ad02dc643808b8af6d5f3ff179e2ce9593f4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1776329215,
+        "narHash": "sha256-a8BYi3mzoJ/AcJP8UldOx8emoPRLeWqALZWu4ZvjPXw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "b86751bc4085f48661017fa226dee99fab6c651b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nvim-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776570972,
+        "narHash": "sha256-RfNZOH1AtjG9afXl40kIdedHikDJrFdhuif3f06eqwM=",
+        "owner": "harivansh-afk",
+        "repo": "nix",
+        "rev": "987df46386f2449262a2c2699492e0a4d6c5b12f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "harivansh-afk",
+        "repo": "nix",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixpkgs": "nixpkgs",
+        "nvim-config": "nvim-config"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

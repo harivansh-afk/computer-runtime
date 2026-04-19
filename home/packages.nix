@@ -18,9 +18,7 @@
     git
     gh
     lazygit
-    delta                 # git diff pager
-
-    bitwarden-cli         # `bw` — used by `just secrets`
+    delta
 
     jq
     curl
