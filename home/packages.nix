@@ -13,7 +13,6 @@
     bat
     zoxide
 
-    neovim
     tmux
 
     git
