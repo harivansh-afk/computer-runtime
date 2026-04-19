@@ -7,6 +7,8 @@
     vimdiffAlias = true;
     defaultEditor = true;
     withNodeJs = true;
+    withPython3 = false;
+    withRuby = false;
 
     extraPackages = with pkgs; [
       ripgrep

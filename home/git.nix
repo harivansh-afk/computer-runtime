@@ -4,7 +4,7 @@
     enable = true;
     package = pkgs.git;
 
-    extraConfig = {
+    settings = {
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
@@ -12,10 +12,13 @@
       fetch.prune = true;
       diff.algorithm = "histogram";
     };
+
+    signing.format = "openpgp";
   };
 
-  programs.git.delta = {
+  programs.delta = {
     enable = true;
+    enableGitIntegration = true;
     options = {
       navigate = true;
       line-numbers = true;
