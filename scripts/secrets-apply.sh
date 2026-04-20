@@ -7,8 +7,11 @@
 # ~/.config/secrets/shell.zsh (wired in home/zsh.nix).
 set -euo pipefail
 
-handle="$1"
+handle="${1:?usage: secrets-apply.sh <handle> [manifest] [force]}"
 manifest="${2:-secrets.json}"
+# mode is accepted for justfile symmetry with repos; currently unused because
+# secrets apply is already idempotent (rewrites files with fixed dest paths).
+_mode="${3:-}"
 
 if [[ ! -f "$manifest" ]]; then
   echo "no manifest at $manifest — run 'just secrets-init' first" >&2
@@ -33,8 +36,11 @@ if [[ -n "$bw_folder" && "$has_bw_refs" -gt 0 ]]; then
   fi
   case "$(bw status | jq -r '.status')" in
     unauthenticated) echo "bw: not logged in. run: bw login" >&2; exit 1 ;;
-    locked)          export BW_SESSION="$(bw unlock --raw)" ;;
-    unlocked)        : ;;
+    locked)
+      BW_SESSION="$(bw unlock --raw)"
+      export BW_SESSION
+      ;;
+    unlocked) : ;;
   esac
   bw_available=1
 fi
@@ -144,12 +150,9 @@ fi
 files_count="$(jq -r '.files // [] | length' "$manifest")"
 if [[ "$files_count" -gt 0 ]]; then
   echo "==> pushing $files_count file(s)"
-  jq -rc '.files[] | @json' "$manifest" | while IFS= read -r entry; do
-    entry="$(echo "$entry" | jq -r '.')"
-    src="$(jq -r '.src'  <<<"$entry")"
-    dest="$(jq -r '.dest' <<<"$entry")"
-    mode="$(jq -r '.mode // "0600"' <<<"$entry")"
-    recursive="$(jq -r '.recursive // false' <<<"$entry")"
+  # Single jq pass → TSV; matches the pattern used in repos-apply.sh.
+  while IFS=$'\t' read -r src dest mode; do
+    [[ -z "$src" ]] && continue
     src_expanded="${src/#\~/$HOME}"
 
     if [[ ! -e "$src_expanded" ]]; then
@@ -158,7 +161,6 @@ if [[ "$files_count" -gt 0 ]]; then
     fi
 
     dest_dir="$(dirname "$dest")"
-    # Use cross-platform basename via shell param expansion.
     name="${src_expanded##*/}"
 
     computer ssh "$handle" -- "mkdir -p ${dest_dir/#\~/\$HOME}" >/dev/null
@@ -170,7 +172,7 @@ if [[ "$files_count" -gt 0 ]]; then
       chmod ${mode} ${dest/#\~/\$HOME}
     " >/dev/null
     echo "  ✓ $src -> $handle:$dest"
-  done
+  done < <(jq -r '.files // [] | .[] | [.src, .dest, (.mode // "0600")] | @tsv' "$manifest")
 fi
 
 if [[ "$missing" -gt 0 ]]; then

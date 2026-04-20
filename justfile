@@ -3,64 +3,14 @@ set dotenv-load := true
 default:
   @just --list
 
+# --- box targets -------------------------------------------------------------
+
 # One-shot onboarding: pick box once, idempotent. Repos always prompts. Pass 'force' to redo.
 go handle='' mode='':
   #!/usr/bin/env bash
   set -euo pipefail
   h="$(./scripts/pick-handle.sh '{{ handle }}')"
-  force=""
-  if [[ '{{ mode }}' == "force" ]]; then force=1; fi
-  marker_dir='~/.cache/computer-nix'
-  done_on_box() { computer ssh "$h" -- "test -f ${marker_dir}/$1.done" >/dev/null 2>&1; }
-  mark_done()   { computer ssh "$h" -- "mkdir -p ${marker_dir} && touch ${marker_dir}/$1.done" >/dev/null; }
-  step()        { ./scripts/run-step.sh "$@"; }
-  skip()        { printf '  \033[90m·\033[0m [%s] %s · skipped\n' "$1" "$2"; }
-
-  echo "==> onboarding $h"
-  if [[ -n "$force" ]]; then
-    echo "    force: wiping markers on $h"
-    computer ssh "$h" -- "rm -rf ${marker_dir}" >/dev/null 2>&1 || true
-  fi
-
-  step "1/5" "switch (home-manager)" ./scripts/bootstrap.sh "$h"
-
-  if done_on_box auth; then
-    skip "2/5" "gh auth"
-  else
-    step "2/5" "gh auth" ./scripts/auth-apply.sh "$h"
-    mark_done auth
-  fi
-
-  if done_on_box secrets; then
-    skip "3/5" "secrets"
-  else
-    if [[ ! -f secrets.json ]]; then
-      echo "    no secrets.json yet — launching picker"
-      ./scripts/secrets-init.sh
-    fi
-    step "3/5" "secrets" ./scripts/secrets-apply.sh "$h"
-    mark_done secrets
-  fi
-
-  if done_on_box agent; then
-    skip "4/5" "agent creds (claude + codex)"
-  else
-    # Auth flows are interactive (OAuth / device code) — run them directly,
-    # no spinner wrapper, so the TTY is available for prompts.
-    echo "  [4/5] claude login..."
-    computer claude-login --computer "$h"
-    echo "  [4/5] codex login..."
-    computer codex-login  --computer "$h"
-    mark_done agent
-  fi
-
-  echo "    picking repos..."
-  ./scripts/repos-init.sh
-  step "5/5" "clone repos" ./scripts/repos-apply.sh "$h"
-
-  echo
-  echo "==> done. connecting to $h..."
-  exec computer ssh "$h"
+  ./scripts/go.sh "$h" '{{ mode }}'
 
 # Apply the flake to a computer
 switch handle='':
@@ -76,28 +26,6 @@ auth handle='':
   h="$(./scripts/pick-handle.sh '{{ handle }}')"
   ./scripts/auth-apply.sh "$h"
 
-# Declaratively apply ./secrets.json
-secrets handle='':
-  #!/usr/bin/env bash
-  set -euo pipefail
-  h="$(./scripts/pick-handle.sh '{{ handle }}')"
-  ./scripts/secrets-apply.sh "$h"
-
-# Interactive picker: generates secrets.json (run once, then commit)
-secrets-init:
-  ./scripts/secrets-init.sh
-
-# Declaratively apply ./repos.json
-repos handle='':
-  #!/usr/bin/env bash
-  set -euo pipefail
-  h="$(./scripts/pick-handle.sh '{{ handle }}')"
-  ./scripts/repos-apply.sh "$h"
-
-# Interactive picker: generates repos.json (run once, then commit)
-repos-init:
-  ./scripts/repos-init.sh
-
 # Copy agent credentials (claude + codex) onto a computer
 agent handle='':
   #!/usr/bin/env bash
@@ -108,3 +36,42 @@ agent handle='':
 # Create a new computer using COMPUTER_SIZE + COMPUTER_DISK_GIB from .env
 create handle:
   computer create --size ${COMPUTER_SIZE} --storage ${COMPUTER_DISK_GIB:-30} {{ handle }}
+
+# --- manifests ---------------------------------------------------------------
+
+# Declaratively apply ./secrets.json. Pass 'force' to hard-overwrite.
+secrets handle='' mode='':
+  #!/usr/bin/env bash
+  set -euo pipefail
+  h="$(./scripts/pick-handle.sh '{{ handle }}')"
+  ./scripts/secrets-apply.sh "$h" secrets.json '{{ mode }}'
+
+# Interactive picker: generates secrets.json (run once, then commit)
+secrets-init:
+  ./scripts/secrets-init.sh
+
+# Declaratively apply ./repos.json. Safe by default (ff-only). Pass 'force' for hard reset.
+repos handle='' mode='':
+  #!/usr/bin/env bash
+  set -euo pipefail
+  h="$(./scripts/pick-handle.sh '{{ handle }}')"
+  ./scripts/repos-apply.sh "$h" repos.json '{{ mode }}'
+
+# Interactive picker: generates repos.json (run once, then commit)
+repos-init:
+  ./scripts/repos-init.sh
+
+# --- dev ---------------------------------------------------------------------
+
+# Format every *.nix file with nixfmt
+fmt:
+  nix --extra-experimental-features 'nix-command flakes' fmt
+
+# Evaluate the flake (catch broken modules before switching)
+check:
+  nix --extra-experimental-features 'nix-command flakes' flake check --no-build
+
+# Shellcheck every script in scripts/
+lint:
+  nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#shellcheck \
+    -c shellcheck scripts/*.sh
