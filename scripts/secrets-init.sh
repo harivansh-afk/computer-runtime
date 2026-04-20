@@ -35,8 +35,11 @@ fi
 if [[ -n "$bw_folder" ]]; then
   case "$(bw status | jq -r '.status')" in
     unauthenticated) echo "bw: not logged in, skipping Bitwarden discovery" >&2; bw_folder="" ;;
-    locked)          export BW_SESSION="$(bw unlock --raw)" ;;
-    unlocked)        : ;;
+    locked)
+      BW_SESSION="$(bw unlock --raw)"
+      export BW_SESSION
+      ;;
+    unlocked) : ;;
   esac
 fi
 
@@ -49,7 +52,7 @@ if [[ -n "$bw_folder" ]]; then
       # Heuristic: if the item name looks like it contains a var name, propose that;
       # otherwise transform the name into a SCREAMING_SNAKE env var name.
       safe="$(echo "$name" | tr '[:lower:] -' '[:upper:]__' | tr -cd 'A-Z0-9_')"
-      if [[ -z "$safe" ]]; then safe="BW_ITEM_$(echo "$name" | md5 | cut -c1-6 | tr a-z A-Z)"; fi
+      if [[ -z "$safe" ]]; then safe="BW_ITEM_$(echo "$name" | md5 | cut -c1-6 | tr '[:lower:]' '[:upper:]')"; fi
       printf 'bw\t%s  →  %s\t{"bw":%s}\n' "$name" "$safe" "$(jq -Rn --arg n "$name" '$n')" \
         >>"$candidates_file"
     done < <(bw list items --folderid "$folder_id" | jq -r '.[].name')

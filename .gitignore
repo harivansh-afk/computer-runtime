@@ -4,6 +4,6 @@ result-*
 .direnv
 .DS_Store
 
-# user-specific manifests (each user fills these in on their fork/checkout)
+# secrets.json is a fingerprint of real credentials — do NOT commit.
+# repos.json IS the declarative source of truth for a fork; commit it.
 secrets.json
-repos.json

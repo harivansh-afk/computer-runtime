@@ -1,0 +1,17 @@
+{
+  "root": "~/github",
+  "repos": [
+    {
+      "repo": "harivansh-afk/diffkit",
+      "branch": "main"
+    },
+    {
+      "repo": "harivansh-afk/gobank",
+      "branch": "main"
+    },
+    {
+      "repo": "harivansh-afk/PersonalWebsite",
+      "branch": "main"
+    }
+  ]
+}
