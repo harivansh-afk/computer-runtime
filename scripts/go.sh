@@ -40,7 +40,7 @@ else
     echo "    no secrets.json yet — launching picker"
     ./scripts/secrets-init.sh
   fi
-  step "3/5" "secrets" ./scripts/secrets-apply.sh "$handle"
+  step "3/5" "secrets" ./scripts/secrets-apply.sh "$handle" secrets.json "$mode"
   mark_done secrets
 fi
 
@@ -58,7 +58,7 @@ fi
 
 echo "    picking repos..."
 ./scripts/repos-init.sh
-step "5/5" "clone repos" ./scripts/repos-apply.sh "$handle"
+step "5/5" "clone repos" ./scripts/repos-apply.sh "$handle" repos.json "$mode"
 
 echo
 echo "==> done. connecting to $handle..."
