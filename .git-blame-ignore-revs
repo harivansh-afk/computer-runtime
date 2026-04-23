@@ -1,0 +1,6 @@
+# Revisions applied here are hidden from `git blame` by default.
+# Enable per-clone with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Add new entries above this line, one full SHA per line, preferably with a
+# short comment describing the mechanical change.
