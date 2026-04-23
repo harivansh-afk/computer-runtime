@@ -49,6 +49,7 @@
       "original": {
         "owner": "harivansh-afk",
         "repo": "nix",
+        "rev": "987df46386f2449262a2c2699492e0a4d6c5b12f",
         "type": "github"
       }
     },
