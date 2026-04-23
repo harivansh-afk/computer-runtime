@@ -28,10 +28,16 @@
         "aarch64-darwin"
       ];
       forAllSystems =
-        f: nixpkgs.lib.genAttrs supportedSystems (system: f (import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        }));
+        f:
+        nixpkgs.lib.genAttrs supportedSystems (
+          system:
+          f (
+            import nixpkgs {
+              inherit system;
+              config.allowUnfree = true;
+            }
+          )
+        );
 
       username = "node";
       hmPkgs = import nixpkgs {
@@ -46,7 +52,7 @@
         modules = [ ./home ];
       };
 
-      formatter = forAllSystems (pkgs: pkgs.nixfmt);
+      formatter = forAllSystems (pkgs: pkgs.nixfmt-tree);
 
       # Each script in scripts/ packaged as a shellcheck'd writeShellApplication.
       # Exposed as a flake output for CI and to be pulled into the devshell.
@@ -66,6 +72,10 @@
             echo "computer-nix dev shell — 'just' to see recipes"
           '';
         };
+
+        neovim = import ./shells/neovim.nix { inherit pkgs; };
+
+        tmux = import ./shells/tmux.nix { inherit pkgs; };
       });
     };
 }

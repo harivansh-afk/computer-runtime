@@ -62,9 +62,7 @@ in
         needs_sync=0
 
         mkdir -p "$state_dir" ${
-          lib.concatMapStringsSep " " (
-            a: ''"$HOME/${agentGlobalDirs.${a}}"''
-          ) targetAgents
+          lib.concatMapStringsSep " " (a: ''"$HOME/${agentGlobalDirs.${a}}"'') targetAgents
         }
 
         if [ ! -f "$stamp_file" ] || [ "$(cat "$stamp_file")" != "$desired_hash" ]; then

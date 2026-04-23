@@ -7,25 +7,25 @@
   programs.lazygit.enable = true;
 
   home.activation.seedLazygitConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    cfg="$HOME/.config/lazygit/config.yml"
-    if [ ! -e "$cfg" ] || [ -L "$cfg" ]; then
-      if [ -L "$cfg" ]; then rm -f "$cfg"; fi
-      mkdir -p "$(dirname "$cfg")"
-      cat >"$cfg" <<'EOF'
-gui:
-  showFileTree: true
-  theme:
-    activeBorderColor:
-      - "#9ece6a"
-      - bold
-    inactiveBorderColor:
-      - "#565f89"
-git:
-  pagers:
-    colorArg: always
-    pager: "delta --paging=never"
-EOF
-      chmod 0644 "$cfg"
-    fi
+        cfg="$HOME/.config/lazygit/config.yml"
+        if [ ! -e "$cfg" ] || [ -L "$cfg" ]; then
+          if [ -L "$cfg" ]; then rm -f "$cfg"; fi
+          mkdir -p "$(dirname "$cfg")"
+          cat >"$cfg" <<'EOF'
+    gui:
+      showFileTree: true
+      theme:
+        activeBorderColor:
+          - "#9ece6a"
+          - bold
+        inactiveBorderColor:
+          - "#565f89"
+    git:
+      pagers:
+        colorArg: always
+        pager: "delta --paging=never"
+    EOF
+          chmod 0644 "$cfg"
+        fi
   '';
 }

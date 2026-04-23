@@ -7,16 +7,16 @@
   programs.gh.enable = true;
 
   home.activation.seedGhConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ghcfg="$HOME/.config/gh/config.yml"
-    if [ ! -e "$ghcfg" ] || [ -L "$ghcfg" ]; then
-      # If it's a dangling/old symlink from a previous generation, remove it.
-      if [ -L "$ghcfg" ]; then rm -f "$ghcfg"; fi
-      mkdir -p "$(dirname "$ghcfg")"
-      cat >"$ghcfg" <<'EOF'
-git_protocol: https
-prompt: enabled
-EOF
-      chmod 0644 "$ghcfg"
-    fi
+        ghcfg="$HOME/.config/gh/config.yml"
+        if [ ! -e "$ghcfg" ] || [ -L "$ghcfg" ]; then
+          # If it's a dangling/old symlink from a previous generation, remove it.
+          if [ -L "$ghcfg" ]; then rm -f "$ghcfg"; fi
+          mkdir -p "$(dirname "$ghcfg")"
+          cat >"$ghcfg" <<'EOF'
+    git_protocol: https
+    prompt: enabled
+    EOF
+          chmod 0644 "$ghcfg"
+        fi
   '';
 }
