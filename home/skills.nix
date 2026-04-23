@@ -23,71 +23,57 @@ let
     "codex" = ".codex/skills";
   };
 
-  # Include targetAgents in the manifest hash so toggling agents forces resync.
+  # Content-addressed stamp: the activation script skips entirely when the
+  # desired hash matches what's on disk. Include targetAgents so toggling
+  # agents forces a resync, but NOT agentGlobalDirs — those are implementation
+  # detail of where `skills add` writes, not user-visible intent.
   manifestHash = builtins.hashString "sha256" (
     builtins.toJSON {
       inherit userSkills targetAgents;
     }
   );
 
-  agentFlags = lib.concatMapStringsSep " " (a: "--agent ${lib.escapeShellArg a}") targetAgents;
+  # The manifest the activation script reads. Separate from the hash input on
+  # purpose so we can evolve the manifest schema (e.g. add agentDirs) without
+  # invalidating every box's stamp file.
+  manifest = pkgs.writeText "skills-manifest.json" (
+    builtins.toJSON {
+      agents = targetAgents;
+      skills = userSkills;
+      agentDirs = agentGlobalDirs;
+    }
+  );
 
-  installCommands = lib.concatMapStringsSep "\n" (skill: ''
-    echo "  installing skill: ${skill.name} (agents: ${lib.concatStringsSep ", " targetAgents})"
-    "${pkgs.nodejs_22}/bin/npx" -y skills add ${lib.escapeShellArg skill.source} \
-      --skill ${lib.escapeShellArg skill.name} ${agentFlags} -g -y \
-      || echo "  (failed to install ${skill.name}, continuing)"
-  '') userSkills;
-
-  missingChecks = lib.concatMapStringsSep "\n" (
-    skill:
-    lib.concatMapStringsSep "\n" (agent: ''
-      if [ ! -e "$HOME/${agentGlobalDirs.${agent}}/${skill.name}" ]; then
-        needs_sync=1
-      fi
-    '') targetAgents
-  ) userSkills;
+  # Extracted from an inline ~60-line bash blob inside home.activation so
+  # shellcheck runs at build time, not the first time a box activates.
+  ensure-skills = pkgs.writeShellApplication {
+    name = "ensure-skills";
+    runtimeInputs = with pkgs; [
+      nodejs_22
+      git
+      jq
+      coreutils
+      findutils
+      gnugrep
+      gnused
+    ];
+    text = builtins.readFile ./ensure-skills.sh;
+    bashOptions = [
+      "errexit"
+      "nounset"
+      "pipefail"
+    ];
+  };
 in
 {
-  home.activation.ensureGlobalSkills = lib.hm.dag.entryAfter [ "writeBoundary" ] (
+  home.activation.ensureGlobalSkills =
     if userSkills == [ ] then
-      ''
-        : # no skills configured
-      ''
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ": # no skills configured"
     else
-      ''
-        state_dir="${config.xdg.stateHome}/skills"
-        stamp_file="$state_dir/global-skills-manifest.sha256"
-        desired_hash=${lib.escapeShellArg manifestHash}
-        needs_sync=0
-
-        mkdir -p "$state_dir" ${
-          lib.concatMapStringsSep " " (a: ''"$HOME/${agentGlobalDirs.${a}}"'') targetAgents
-        }
-
-        if [ ! -f "$stamp_file" ] || [ "$(cat "$stamp_file")" != "$desired_hash" ]; then
-          needs_sync=1
-        fi
-
-        ${missingChecks}
-
-        if [ "$needs_sync" -eq 1 ]; then
-          export PATH="${
-            lib.makeBinPath [
-              pkgs.nodejs_22
-              pkgs.git
-              pkgs.coreutils
-              pkgs.findutils
-              pkgs.gnugrep
-              pkgs.gnused
-            ]
-          }:$PATH"
-
-          echo "==> syncing ${toString (builtins.length userSkills)} skill(s) for ${toString (builtins.length targetAgents)} agent(s)"
-          ${installCommands}
-
-          printf '%s\n' "$desired_hash" > "$stamp_file"
-        fi
-      ''
-  );
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        ${ensure-skills}/bin/ensure-skills \
+          ${manifest} \
+          ${lib.escapeShellArg manifestHash} \
+          "${config.xdg.stateHome}/skills"
+      '';
 }

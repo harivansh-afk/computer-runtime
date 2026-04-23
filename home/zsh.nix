@@ -7,6 +7,11 @@
 {
   programs.zsh = {
     enable = true;
+    # Keep .zshrc / .zshenv at $HOME rather than under $XDG_CONFIG_HOME. Some
+    # tooling we rely on (Claude Code, Codex CLI, GH Copilot) spawns login
+    # shells that don't honor ZDOTDIR, so dotfiles must live at the canonical
+    # legacy location for their initialization to take effect. History is
+    # still kept under $XDG_STATE_HOME (see `history.path` below).
     dotDir = config.home.homeDirectory;
     enableCompletion = true;
     defaultKeymap = "viins";
