@@ -61,6 +61,17 @@ repos handle='' mode='':
 repos-init:
   ./scripts/repos-init.sh
 
+# --- prompt factory ----------------------------------------------------------
+
+# Spawn one Devin agent end-to-end on a fresh box, seeded with <prompt-file>.
+spawn handle prompt repos='repos.json':
+  ./scripts/spawn-agent.sh {{ handle }} {{ prompt }} {{ repos }}
+
+# Fan out one agent per prompt file in <dir>. Extra args are passed through
+# (e.g. `just factory ./prompts -- --prefix vuln -j 4`).
+factory dir *args:
+  ./scripts/prompt-factory.sh {{ dir }} {{ args }}
+
 # --- dev ---------------------------------------------------------------------
 
 # Format every *.nix file with nixfmt
