@@ -70,8 +70,17 @@ if [[ -n "$json_ls" ]] && printf '%s' "$json_ls" | jq -e --arg h "$handle" \
      '.computers[]? | select(.handle == $h)' >/dev/null 2>&1; then
   log "computer '$handle' already exists"
 else
-  log "creating computer '$handle' (size=$size disk=${disk}GiB)"
-  computer create --size "$size" --storage "$disk" "$handle"
+  # `computer create` rejects --size + --storage together (presets own both
+  # memory and storage). If $size is a preset string (ram-2g/ram-4g/ram-8g),
+  # pass only --size; otherwise interpret it as GiB and pass --memory +
+  # --storage together.
+  if [[ "$size" =~ ^ram-[0-9]+g$ ]]; then
+    log "creating computer '$handle' (size=$size)"
+    computer create --size "$size" "$handle"
+  else
+    log "creating computer '$handle' (memory=${size}GiB disk=${disk}GiB)"
+    computer create --memory "$size" --storage "$disk" "$handle"
+  fi
 fi
 
 # ---------------------------------------------------------------------------

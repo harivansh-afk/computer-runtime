@@ -33,9 +33,11 @@ agent handle='':
   h="$(./scripts/pick-handle.sh '{{ handle }}')"
   ./scripts/pick-agent.sh "$h"
 
-# Create a new computer using COMPUTER_SIZE + COMPUTER_DISK_GIB from .env
+# Create a new computer using COMPUTER_SIZE (preset) from .env. If you need
+# a custom memory/storage split, `computer create --memory N --storage M` by
+# hand — the CLI rejects mixing presets with explicit sizes.
 create handle:
-  computer create --size ${COMPUTER_SIZE} --storage ${COMPUTER_DISK_GIB:-30} {{ handle }}
+  computer create --size ${COMPUTER_SIZE} {{ handle }}
 
 # --- manifests ---------------------------------------------------------------
 
