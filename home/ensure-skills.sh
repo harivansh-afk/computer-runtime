@@ -52,7 +52,10 @@ printf '==> syncing %d skill(s) for %d agent(s)\n' "$num_skills" "$num_agents"
 
 while IFS=$'\t' read -r name source; do
   printf '  installing skill: %s\n' "$name"
-  npx -y skills add "$source" --skill "$name" "${agent_flags[@]}" -g -y \
+  # </dev/null is load-bearing: `npx skills add` reads stdin (tty detection +
+  # gum fallback), and without it the CLI eats the remaining entries off the
+  # while-read loop's stdin, silently installing only the first skill.
+  npx -y skills add "$source" --skill "$name" "${agent_flags[@]}" -g -y </dev/null \
     || printf '  (failed to install %s, continuing)\n' "$name"
 done < <(jq -r '.skills[] | [.name, .source] | @tsv' "$manifest")
 

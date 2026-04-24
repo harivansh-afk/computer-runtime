@@ -231,7 +231,10 @@ log "uploaded to ~/prompts/${handle}.md"
 step "9/9 launch"
 
 # Compose devin CLI args.
-devin_cmd="devin --prompt-file ~/prompts/${handle}.md --permission-mode ${permission_mode}"
+# --respect-workspace-trust false skips the interactive "do you trust this
+# directory?" gate. Without it, Devin blocks on a y/n prompt inside tmux and
+# the agent never sees the real task.
+devin_cmd="devin --prompt-file ~/prompts/${handle}.md --permission-mode ${permission_mode} --respect-workspace-trust false"
 [[ -n "$model"      ]] && devin_cmd+=" --model ${model}"
 [[ -n "$extra_args" ]] && devin_cmd+=" ${extra_args}"
 
