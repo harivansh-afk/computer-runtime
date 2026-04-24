@@ -22,5 +22,12 @@
       name = "agent-browser";
       source = "https://github.com/vercel-labs/agent-browser";
     }
+    # Lets the parent Devin agent fan out into tmux-windowed subagents for
+    # parallel research/grep/reading without burning the parent's context.
+    # Required by the nvim-wiki prompt factory.
+    {
+      name = "tmux";
+      source = "https://github.com/harivansh-afk/tmux-subagents";
+    }
   ];
 }

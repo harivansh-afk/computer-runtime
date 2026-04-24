@@ -91,6 +91,18 @@ let
         pkgs.fzf
       ];
     };
+    spawn-agent = {
+      file = ./spawn-agent.sh;
+      runtimeInputs = common;
+    };
+    prompt-factory = {
+      file = ./prompt-factory.sh;
+      runtimeInputs = common;
+    };
+    nvim-prompts = {
+      file = ./nvim-prompts.sh;
+      runtimeInputs = common;
+    };
   };
 in
 lib.mapAttrs (name: args: mkScript ({ inherit name; } // args)) scripts

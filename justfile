@@ -72,6 +72,35 @@ spawn handle prompt repos='repos.json':
 factory dir *args:
   ./scripts/prompt-factory.sh {{ dir }} {{ args }}
 
+# --- nvim-wiki bug-hunting factory ------------------------------------------
+
+# Generate one prompt per wiki/tasks/*.md brief into ./prompts/nvim/
+nvim-prompts wiki='':
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [[ -n "{{ wiki }}" ]]; then
+    ./scripts/nvim-prompts.sh --wiki '{{ wiki }}'
+  else
+    ./scripts/nvim-prompts.sh
+  fi
+
+# Spawn 20 agents in parallel, one per nvim-wiki task.
+# Requires: ./prompts/nvim/ populated (run `just nvim-prompts` first).
+# `dangerous` permission mode is set so agents can tmux-spawn subagents and
+# git-push findings without interactive approval.
+nvim-factory jobs='5':
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [[ ! -d ./prompts/nvim ]] || ! compgen -G "./prompts/nvim/*.md" >/dev/null; then
+    echo "no prompts yet — run: just nvim-prompts" >&2
+    exit 1
+  fi
+  export DEVIN_PERMISSION_MODE="${DEVIN_PERMISSION_MODE:-dangerous}"
+  ./scripts/prompt-factory.sh ./prompts/nvim \
+    --prefix nvim \
+    --repos repos.nvim-wiki.json \
+    -j '{{ jobs }}'
+
 # --- dev ---------------------------------------------------------------------
 
 # Format every *.nix file with nixfmt
