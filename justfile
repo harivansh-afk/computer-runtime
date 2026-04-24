@@ -39,6 +39,13 @@ agent handle='':
 create handle:
   computer create --size ${COMPUTER_SIZE} {{ handle }}
 
+# Destroy a computer. Safe to re-run; no-op if the handle doesn't exist.
+destroy handle:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  computer rm '{{ handle }}' 2>/dev/null \
+    || echo "no such computer: {{ handle }}"
+
 # --- manifests ---------------------------------------------------------------
 
 # Declaratively apply ./secrets.json. Pass 'force' to hard-overwrite.

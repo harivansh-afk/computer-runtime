@@ -64,11 +64,16 @@ echo "==> applying home-manager flake"
 # new one got produced even if ssh drops its connection on the way out.
 before="$(remote 'readlink -f ~/.local/state/nix/profiles/home-manager 2>/dev/null || echo none' 2>/dev/null | tr -d '\r' || echo none)"
 
+# Each home-manager activation creates *.backup files next to any managed
+# target. A second run with the same suffix fails because the old .backup
+# already exists. Rotate the suffix per run so re-applies are idempotent.
+backup_suffix="backup-$(date +%Y%m%d%H%M%S)"
+
 hm_rc=0
 remote "
   set -e
   export PATH=\"\$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:\$PATH\"
-  nix --log-format bar-with-logs run nixpkgs#home-manager -- switch --flake '${flake_ref}' -b backup --refresh --no-write-lock-file
+  nix --log-format bar-with-logs run nixpkgs#home-manager -- switch --flake '${flake_ref}' -b '${backup_suffix}' --refresh --no-write-lock-file
 " || hm_rc=$?
 
 # ssh sometimes exits 255 after home-manager finishes cleanly (control socket
