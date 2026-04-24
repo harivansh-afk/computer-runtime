@@ -1,15 +1,15 @@
 {
-  "$comment": "Repos for the nvim-wiki bug-hunting prompt factory. The wiki comes first so spawn-agent.sh starts the Devin session inside it (enables direct `git commit && git push` on findings). neovim/neovim is shallow-cloned — agents only need to read source.",
-  "root": "~/work",
+  "$comment": "Repos for the nvim-wiki bug-hunting prompt factory. Lives under /home/node/workspace — the persistent, web-visible path on agentcomputer boxes. Wiki comes first so spawn-agent.sh starts Devin inside it (makes `git commit && git push` on findings trivial). neovim/neovim is shallow-cloned — agents only need to read source.",
+  "root": "/home/node/workspace",
   "repos": [
     {
       "repo": "harivansh-afk/nvim-wiki",
-      "dest": "~/work/nvim-wiki",
+      "dest": "/home/node/workspace/nvim-wiki",
       "branch": "main"
     },
     {
       "repo": "neovim/neovim",
-      "dest": "~/work/neovim",
+      "dest": "/home/node/workspace/neovim",
       "branch": "master",
       "depth": 1
     }

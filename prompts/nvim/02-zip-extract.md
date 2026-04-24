@@ -4,23 +4,23 @@ hey — your task is **wiki/tasks/02-zip-extract.md** in the nvim-wiki repo.
 
 ## what you have on this box
 
-- **~/work/nvim-wiki** — the wiki (has all the context you need)
+- **/home/node/workspace/nvim-wiki** — the wiki (has all the context you need)
   - `wiki/runtime.md` — read this first. mandatory rules for how to work.
   - `wiki/tasks/02-zip-extract.md` — your specific task brief: "# Zip plugin extraction path"
   - `wiki/codebase/*.md` — surface maps the task brief links into
   - `wiki/index.md` — map of every other surface if you need neighbours
-- **~/work/neovim** — the neovim source the task brief points into
+- **/home/node/workspace/neovim** — the neovim source the task brief points into
   (paths in the brief like `src/nvim/...` resolve under here)
 
 ## what to do
 
-1. read `~/work/nvim-wiki/wiki/runtime.md` and `~/work/nvim-wiki/wiki/tasks/02-zip-extract.md` before anything else.
+1. read `/home/node/workspace/nvim-wiki/wiki/runtime.md` and `/home/node/workspace/nvim-wiki/wiki/tasks/02-zip-extract.md` before anything else.
 2. find a verifiable, reproducible exploit in the section of neovim code this task covers. chain input → normalization → policy gate → sink and name the broken invariant.
 3. use the **tmux subagents skill** (`~/.claude/skills/tmux/SKILL.md`) aggressively. any time you are about to grep / read a lot of neovim source, delegate to a subagent so you don't burn parent context. each subagent writes to a known file; you read the file, not the pane.
 
 ## when you are done
 
-do all of this before you exit, from inside `~/work/nvim-wiki`:
+do all of this before you exit, from inside `/home/node/workspace/nvim-wiki`:
 
 1. write your findings to `wiki/findings/02-zip-extract/findings.md` — include:
    - the exact broken invariant
@@ -31,7 +31,7 @@ do all of this before you exit, from inside `~/work/nvim-wiki`:
 2. stage, commit, push to `main`. use this exact recipe so 20 agents pushing at once don't deadlock each other:
 
    ```bash
-   cd ~/work/nvim-wiki
+   cd /home/node/workspace/nvim-wiki
    git add wiki/findings/02-zip-extract/
    git commit -m "findings(02-zip-extract): <one-line summary>"
    # retry loop — another agent may have pushed between your fetch and push

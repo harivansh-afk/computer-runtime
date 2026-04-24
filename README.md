@@ -1,25 +1,59 @@
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/getcompanion-ai/computer-nix)
+# computer-runtime
 
-<img width="959" height="638" alt="image" src="https://github.com/user-attachments/assets/239a5c42-81e4-443a-97d8-ce0e8588feb6" />
+Home-manager flake + orchestration scripts for spinning up ephemeral
+[agentcomputer.ai][ac] boxes seeded with Nix, dotfiles, Devin CLI, agent
+skills, repos, and a prompt.
 
-Runtime flow in a few sentences
+Fork of [`getcompanion-ai/computer-nix`][upstream].
 
-  Authoring side (your laptop): just nvim-prompts reads ../nvim-wiki/wiki/tasks/*.md and writes 20 tiny seed prompts to
-  prompts/nvim/. just nvim-factory <jobs> then calls scripts/prompt-factory.sh, which plans a handle per prompt
-  (nvim-<slug>) and fans out to scripts/spawn-agent.sh with bounded -j concurrency.
+## Usage
 
-  Per-box flow (inside spawn-agent.sh, idempotent via ~/.cache/computer-nix/*.done markers): computer create →
-  bootstrap.sh (install Nix + run home-manager switch --flake $FLAKE_REF, which pulls skills.nix and installs the tmux,
-  find-skills, agent-browser skills into ~/.claude/skills/) → auth-apply.sh (push your gh token) → secrets-apply.sh
-  (skipped, no secrets.json) → curl-install Devin CLI → rsync your laptop's ~/.local/share/devin/credentials.toml onto
-  the box → repos-apply.sh clones harivansh-afk/nvim-wiki + neovim/neovim into ~/work/ → upload the prompt to
-  ~/prompts/<handle>.md → tmux new-session -d -s devin -c ~/work/nvim-wiki "devin --prompt-file ~/prompts/<handle>.md
-  --permission-mode dangerous".
+```bash
+cp .env.example .env                    # set FLAKE_REF to your fork
+just go <handle>                        # one-shot onboarding (interactive)
+```
 
-  Agent side: Devin boots already inside tmux (so $TMUX is set and the tmux subagent skill works), reads wiki/runtime.md
-   + its task brief, spawns tmux-window subagents to parallelize grepping neovim source, writes
-  wiki/findings/<slug>/findings.md, then runs the pull-rebase-push retry loop to land on main of
-  harivansh-afk/nvim-wiki.
+Or run one Devin agent end-to-end from a prompt file:
 
-  To trigger: just nvim-prompts once, then just nvim-factory 5 (5 parallel spawns). Attach to any agent with computer
-  ssh <handle> -- tmux attach -t devin.
+```bash
+./scripts/spawn-agent.sh <handle> <prompt.md> <repos.json>
+```
+
+## nvim-wiki factory
+
+Fan out 20 Devin agents — one per task brief in [`nvim-wiki`][wiki] — to
+hunt vulns in [`neovim/neovim`][nvim] in parallel. Each agent uses the
+[`tmux-subagents`][tmux] skill to delegate research without burning parent
+context, then commits `wiki/findings/<slug>/findings.md` back to the wiki.
+
+```bash
+just nvim-prompts                       # generate prompts/nvim/*.md
+just nvim-factory 5                     # spawn 20 boxes, 5 at a time
+```
+
+## Related repos
+
+- [`nvim-wiki`][wiki] — task briefs + runtime rules the agents read
+- [`tmux-subagents`][tmux] — parallel-subagent skill
+- [`harivansh-afk/nix`][dotfiles] — nvim config pinned by `flake.nix`
+- [`computer-nix`][upstream] — upstream template
+
+## Structure
+
+```
+flake.nix               inputs + homeConfigurations.computer
+home/                   home-manager modules
+scripts/                bash recipes wrapped by the justfile
+skills.nix              declarative agent-skills manifest
+repos.nvim-wiki.json    repos manifest for the nvim factory
+prompts/nvim/           generated seed prompts (one per task)
+```
+
+See [`forking.md`](forking.md) for the zero-to-box walkthrough.
+
+[ac]: https://agentcomputer.ai
+[upstream]: https://github.com/getcompanion-ai/computer-nix
+[wiki]: https://github.com/harivansh-afk/nvim-wiki
+[nvim]: https://github.com/neovim/neovim
+[tmux]: https://github.com/harivansh-afk/tmux-subagents
+[dotfiles]: https://github.com/harivansh-afk/nix
