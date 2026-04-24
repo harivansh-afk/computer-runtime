@@ -125,13 +125,22 @@ else
   # directly rather than relying on `command -v`. The installer self-handles
   # re-runs, but skipping the curl is faster on repeat.
   # shellcheck disable=SC2016  # expanded on the remote box
+  #
+  # The upstream installer prints a TUI-style "Welcome to Devin for Terminal!"
+  # banner after the binary is extracted and exits 130 (SIGINT) when there is
+  # no TTY — which there isn't under `computer ssh ... --`. The binary itself
+  # is already installed by that point, so:
+  #   * redirect stdin from /dev/null
+  #   * pipe the installer through `cat` to detach from any TTY expectation
+  #   * verify the binary is on disk and ignore the installer's exit code
   remote '
     set -e
     export PATH="$HOME/.local/bin:$PATH"
     if [ -x "$HOME/.local/bin/devin" ]; then
       exit 0
     fi
-    curl -fsSL https://cli.devin.ai/install.sh | bash
+    curl -fsSL https://cli.devin.ai/install.sh </dev/null | bash </dev/null | cat || true
+    test -x "$HOME/.local/bin/devin"
   '
   mark_done devin-install
 fi
