@@ -83,6 +83,20 @@ else
   fi
 fi
 
+# agentcomputer stores per-box SSH state at ~/.agentcomputer/ssh/<uuid>/.
+# When a handle is deleted and re-created, the new VM's host key can land
+# against a recycled UUID that still has a stale known_hosts entry, which
+# breaks `computer ssh` with "REMOTE HOST IDENTIFICATION HAS CHANGED". Wipe
+# the dir for this box's UUID so the first connect re-TOFUs cleanly.
+fresh_ls="$(computer ls --json 2>/dev/null || true)"
+fresh_json="${fresh_ls#"${fresh_ls%%\{*}"}"
+box_uuid="$(printf '%s' "$fresh_json" | jq -r --arg h "$handle" \
+  '.computers[]? | select(.handle == $h) | .id' 2>/dev/null || true)"
+if [[ -n "$box_uuid" && -d "$HOME/.agentcomputer/ssh/$box_uuid" ]]; then
+  rm -rf "$HOME/.agentcomputer/ssh/$box_uuid"
+  log "cleared stale known_hosts for $box_uuid"
+fi
+
 # ---------------------------------------------------------------------------
 # 2. nix + home-manager
 # ---------------------------------------------------------------------------
