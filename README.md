@@ -1,8 +1,8 @@
 # computer-runtime
 
-<img width="939" height="807" alt="image" src="https://github.com/user-attachments/assets/efcda3f9-14e5-43e4-92b3-887793f1772d" />
+<img width="939" height="807" alt="computer runtime overview" src="docs/assets/runtime-overview.png" />
 
-<img width="611" height="441" alt="image" src="https://github.com/user-attachments/assets/2c09039f-2e5f-4a48-8c54-8bf0f1fce72b" />
+<img width="611" height="441" alt="computer runtime session" src="docs/assets/runtime-session.png" />
 
 Home-manager flake + orchestration scripts for spinning up [agentcomputer.ai][ac] boxes seeded with Nix, Devin CLI, agent skills, repos, and a prompt.
 
