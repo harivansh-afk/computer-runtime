@@ -2,7 +2,7 @@
 
 Technical map of the repo so you know what to touch when you adapt it. Also: zero-to-box walkthrough and pointers for running home-manager on your Mac / KVM host.
 
-<img width="600" alt="terminal screenshot" src="https://github.com/user-attachments/assets/e4dfe881-6999-4dc6-b762-d164e99fdd79" />
+<img width="600" alt="terminal screenshot" src="docs/assets/forking-terminal.png" />
 
 ## Zero to a working box
 
